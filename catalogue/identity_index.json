@@ -1,0 +1,25 @@
+{
+  "description": "Longitudinal identity and location index. Membership only: no clinical content. All identifiers are synthetic.",
+  "persons": [
+    {
+      "person_id": "NID-DEMO-0001",
+      "display": "Jane Smith (synthetic)",
+      "links": [
+        {"source": "hospital-a", "local_id": "ehr-7f3a9c", "method": "deterministic", "confidence": 1.0},
+        {"source": "hospital-b", "local_id": "PAT-B-55120", "method": "deterministic", "confidence": 1.0},
+        {"source": "community", "local_id": "C-000913", "method": "probabilistic", "confidence": 0.93},
+        {"source": "imaging", "local_id": "PACS-88321", "method": "deterministic", "confidence": 1.0},
+        {"source": "gp-legacy", "local_id": "GPL-4471", "method": "deterministic", "confidence": 1.0}
+      ],
+      "research_pseudonym": {"source": "research", "local_id": "PSN-RC25-0042", "issued_by": "Trusted Linkage Service"}
+    },
+    {
+      "person_id": "NID-DEMO-0002",
+      "display": "Sam Patel (synthetic)",
+      "links": [
+        {"source": "hospital-b", "local_id": "PAT-B-60001", "method": "deterministic", "confidence": 1.0},
+        {"source": "community", "local_id": "C-001204", "method": "probabilistic", "confidence": 0.71}
+      ]
+    }
+  ]
+}

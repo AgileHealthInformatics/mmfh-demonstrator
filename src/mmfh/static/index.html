@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MMFH Demonstrator</title>
+<style>
+:root{
+  --bg:#f7f7f5;--panel:#ffffff;--ink:#1d1d1b;--muted:#6b6b66;--line:#e3e2dd;--accent:#1f5f8b;--onaccent:#ffffff;
+  --ok:#2e7d4f;--okbg:#e6f3ea;--warn:#8a5a00;--warnbg:#fbf0d9;--bad:#a1332b;--badbg:#f8e3e1;--info:#4b4f9a;--infobg:#e9eaf7;
+  --s1:#1f5f8b;--s2:#c0692a;--s3:#2e7d4f;--s4:#8a4f9e;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#161615;--panel:#1f1f1d;--ink:#ecebe6;--muted:#a3a29b;--line:#34332f;--accent:#7fb3d9;--onaccent:#0f2433;
+  --ok:#7fd19c;--okbg:#1d3326;--warn:#f0c46a;--warnbg:#3a2f15;--bad:#f09a90;--badbg:#3d201d;--info:#b1b5f0;--infobg:#25274a;
+  --s1:#7fb3d9;--s2:#f0a36a;--s3:#7fd19c;--s4:#cf9be0;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{padding:20px 24px 12px;border-bottom:1px solid var(--line);background:var(--panel)}
+header h1{margin:0;font-size:20px;font-weight:650}
+header p{margin:4px 0 0;color:var(--muted);font-size:13px}
+main{display:grid;grid-template-columns:320px 1fr;gap:20px;padding:20px 24px;max-width:1400px;margin:0 auto}
+@media (max-width:900px){main{grid-template-columns:1fr;padding:16px}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+h2{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 12px;font-weight:600}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+select,input[type=number]{width:100%;padding:7px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
+.checks label{display:flex;gap:8px;align-items:center;color:var(--ink);margin:4px 0;font-size:14px}
+button{margin-top:16px;width:100%;padding:10px;border:0;border-radius:8px;background:var(--accent);color:var(--onaccent);font:inherit;font-weight:600;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
+.hint{font-size:12px;color:var(--muted);margin-top:8px}
+.banner{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.st-complete,.st-no_matching_data{background:var(--okbg);color:var(--ok)}
+.st-partial,.st-identity_uncertain,.st-semantics_unresolved{background:var(--warnbg);color:var(--warn)}
+.st-not_permitted,.st-unavailable,.st-failed{background:var(--badbg);color:var(--bad)}
+.st-not_asked,.st-excluded{background:var(--infobg);color:var(--info)}
+.flag{background:var(--infobg);color:var(--info);font-weight:500;margin:1px}
+.flag.possible-duplicate,.flag.conflict{background:var(--warnbg);color:var(--warn)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:600}
+tbody tr.item{cursor:pointer}
+tbody tr.item:hover{background:var(--bg)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:20px 0 12px;overflow-x:auto}
+.tabs button{width:auto;margin:0;background:none;color:var(--muted);border-radius:0;padding:8px 12px;border-bottom:2px solid transparent}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--accent)}
+pre{font:12px/1.45 var(--mono);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px;overflow:auto;max-height:420px;white-space:pre-wrap;word-break:break-word}
+.muted{color:var(--muted)}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+main>*{min-width:0}
+.chart{width:100%;height:auto;display:block}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+dialog{border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);max-width:760px;width:calc(100% - 32px);padding:20px}
+dialog::backdrop{background:rgba(0,0,0,.35)}
+dialog h3{margin:0 0 8px}
+.chain{list-style:none;padding:0;margin:8px 0}
+.chain li{padding:6px 10px;border-left:3px solid var(--accent);margin:4px 0;background:var(--bg);font-size:13px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 16px;font-size:13px}
+.empty{padding:40px;text-align:center;color:var(--muted)}
+.scroll{overflow-x:auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>Metadata-Mediated Federated Health — demonstrator</h1>
+  <p>Federate metadata before data. Every value keeps its source, its native form and its provenance; gaps are as visible as data. All people, sources and values are synthetic.</p>
+</header>
+<main>
+  <section class="panel" aria-label="Logical Information Request">
+    <h2>Logical Information Request</h2>
+    <label for="subject">Subject</label>
+    <select id="subject"></select>
+    <label>Concepts</label>
+    <div class="checks" id="concepts"></div>
+    <label for="months">Window (months to now)</label>
+    <input id="months" type="number" min="1" max="120" value="18">
+    <label>Accept equivalence grades</label>
+    <div class="checks">
+      <label><input type="checkbox" value="exact" checked disabled> exact</label>
+      <label><input type="checkbox" class="grade" value="narrower" checked> narrower</label>
+      <label><input type="checkbox" class="grade" value="broader"> broader</label>
+    </div>
+    <div class="checks"><label><input type="checkbox" id="render" checked> Render in UCUM units (native kept)</label></div>
+    <label for="purpose">Purpose of use</label>
+    <select id="purpose">
+      <option value="direct-care">direct-care</option>
+      <option value="secondary-use">secondary-use</option>
+      <option value="research">research</option>
+    </select>
+    <label for="deadline">Completeness deadline (seconds)</label>
+    <input id="deadline" type="number" min="0.5" max="30" step="0.5" value="2">
+    <button id="run">Send request</button>
+    <div class="hint">The imaging source answers in ~5 s. Raise the deadline above that to watch it move from <em>unavailable</em> to <em>complete</em>.</div>
+  </section>
+
+  <section>
+    <div class="panel" id="out"><div class="empty">Send the request to federate it across the registered sources.</div></div>
+  </section>
+</main>
+
+<dialog id="prov"><div id="provBody"></div><form method="dialog"><button>Close</button></form></dialog>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const STATUS_LABEL = {complete:"Complete",no_matching_data:"No matching data",partial:"Partial",not_permitted:"Not permitted",unavailable:"Unavailable",failed:"Failed",semantics_unresolved:"Semantics unresolved",identity_uncertain:"Identity uncertain",not_asked:"Not asked",excluded:"Excluded (P4)"};
+const SRC_COLOR = {"hospital-a":"var(--s1)","hospital-b":"var(--s2)","community":"var(--s3)","research":"var(--s4)","imaging":"var(--s4)"};
+let last = null, lastLir = null, tab = "results";
+
+async function init(){
+  const [persons, cat] = await Promise.all([fetch("/api/persons").then(r=>r.json()), fetch("/api/catalogue").then(r=>r.json())]);
+  $("#subject").innerHTML = persons.map(p=>`<option value="${esc(p.person_id)}">${esc(p.display)} — ${esc(p.person_id)}</option>`).join("");
+  $("#concepts").innerHTML = cat.concepts.map(c=>`<label><input type="checkbox" class="concept" value="${esc(c.id)}" checked> ${esc(c.label)}</label>`).join("");
+}
+
+async function run(){
+  const btn = $("#run"); btn.disabled = true; btn.textContent = "Federating…";
+  const months = +$("#months").value || 18;
+  const from = new Date(Date.now() - months*30.44*864e5).toISOString();
+  const lir = {
+    subject: $("#subject").value,
+    concepts: [...document.querySelectorAll(".concept:checked")].map(e=>e.value),
+    window: {effective_from: from},
+    accept_grades: ["exact", ...[...document.querySelectorAll(".grade:checked")].map(e=>e.value)],
+    render_units: $("#render").checked,
+    purpose: $("#purpose").value,
+    requester: {id:"clin-0042", role:"consultant-nephrologist", organisation:"Hospital A"},
+    deadline_seconds: +$("#deadline").value || 2
+  };
+  try{
+    const r = await fetch("/api/lir",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(lir)});
+    const body = await r.json();
+    if(!r.ok){ $("#out").innerHTML = `<div class="empty">Request rejected: ${esc(typeof body.detail==="string"?body.detail:JSON.stringify(body.detail))}</div>`; return; }
+    last = body; lastLir = lir; render();
+  } finally { btn.disabled = false; btn.textContent = "Send request"; }
+}
+
+function render(){
+  const r = last;
+  const stat = (s) => `<span class="pill st-${s}">${STATUS_LABEL[s]||s}</span>`;
+  const rows = r.sources.map(s=>`<tr><td><strong>${esc(s.label)}</strong><div class="muted" style="font-size:12px">${esc(s.interface||"")}</div></td><td>${stat(s.status)}</td><td class="num">${s.items_returned}</td><td>${esc(s.detail)}${s.unresolved_variables.length?`<div class="muted" style="font-size:12px">Unresolved: ${esc(s.unresolved_variables.join(", "))}</div>`:""}</td><td class="num muted">${s.elapsed_ms!=null?s.elapsed_ms+" ms":""}</td></tr>`).join("")
+    + r.excluded.map(e=>`<tr><td><strong>${esc(e.source)}</strong></td><td>${stat("excluded")}</td><td class="num">–</td><td>${esc(e.reason)}</td><td></td></tr>`).join("");
+  $("#out").innerHTML = `
+    <div class="banner"><h2 style="margin:0">Result</h2>${stat(r.overall_status)}
+      <span class="muted" style="font-size:13px">${r.items.length} values · catalogue ${esc(r.catalogue_version)} · purpose ${esc(r.purpose)}</span></div>
+    ${r.warnings.map(w=>`<div class="pill st-partial" style="margin:0 6px 8px 0;white-space:normal">${esc(w)}</div>`).join("")}
+    <div class="scroll"><table><thead><tr><th>Source</th><th>Status</th><th>Items</th><th>Detail</th><th>Time</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="tabs" role="tablist">${["results","trend","queries","prov","audit","cdif"].map(t=>`<button class="${t===tab?"on":""}" data-tab="${t}">${{results:"Values",trend:"Trend",queries:"Native queries",prov:"PROV export",audit:"Audit",cdif:"Catalogue (CDIF)"}[t]}</button>`).join("")}</div>
+    <div id="tabBody"></div>`;
+  document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render();});
+  renderTab();
+}
+
+function fmtVal(i){
+  const v = i.rendered_value ?? i.native_value, u = i.rendered_unit ?? i.native_unit;
+  if(typeof v === "string") return `<span style="font-size:13px">${esc(v.length>90?v.slice(0,90)+"…":v)}</span>`;
+  return `<span class="num">${esc(v)}</span> <span class="muted">${esc(u||"")}</span>`;
+}
+
+async function renderTab(){
+  const r = last, el = $("#tabBody");
+  if(tab==="results"){
+    if(!r.items.length){ el.innerHTML = `<div class="empty">No values returned. Check the source statuses above: an empty result is never silent.</div>`; return; }
+    const groups = {};
+    r.items.forEach((it,idx)=>{(groups[it.concept_label] ||= []).push([it,idx]);});
+    el.innerHTML = Object.entries(groups).map(([label,list])=>`
+      <h2 style="margin-top:14px">${esc(label)}</h2>
+      <div class="scroll"><table><thead><tr><th>Effective</th><th>Value</th><th>Native</th><th>Representation</th><th>Source</th><th>Grade</th><th>Flags</th></tr></thead><tbody>
+      ${list.map(([it,idx])=>`<tr class="item" data-i="${idx}"><td class="num">${esc(it.effective_time.slice(0,10))}</td><td>${fmtVal(it)}</td>
+        <td class="num muted">${it.flags.includes("derived")?esc(it.native_value)+" "+esc(it.native_unit):""}</td>
+        <td>${esc(it.represented_label)}</td><td><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${SRC_COLOR[it.source]||"var(--muted)"};margin-right:6px"></i>${esc(it.source)}</td>
+        <td>${esc(it.grade)}</td><td>${it.flags.map(f=>`<span class="pill flag ${esc(f)}">${esc(f)}</span>`).join(" ")}</td></tr>`).join("")}
+      </tbody></table></div>`).join("") + `<p class="hint">Select a row for its full provenance.</p>`;
+    el.querySelectorAll("tr.item").forEach(tr=>tr.onclick=()=>showProv(r.items[+tr.dataset.i]));
+  } else if(tab==="trend"){
+    el.innerHTML = chart(r.items.filter(i=>i.concept==="concept:serum-creatinine"),"Serum creatinine") + chart(r.items.filter(i=>i.concept==="concept:egfr"),"eGFR (equations shown separately, not merged)", true);
+  } else if(tab==="queries"){
+    el.innerHTML = r.sources.filter(s=>s.native_queries.length).map(s=>`<h2 style="margin-top:14px">${esc(s.label)}</h2>${s.native_queries.map(q=>`<pre>${esc(q)}</pre>`).join("")}`).join("") || `<div class="empty">No sources were queried.</div>`;
+  } else if(tab==="prov"){
+    el.innerHTML = `<p class="hint">W3C PROV (PROV-JSON shape) for the same request, re-sent with <code>?format=prov</code>. Values are re-fetched from the sources, not cached by the broker.</p><pre>Loading…</pre>`;
+    const p = await fetch("/api/lir?format=prov",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(lastLir)}).then(x=>x.json());
+    el.querySelector("pre").textContent = JSON.stringify(p,null,2);
+  } else if(tab==="audit"){
+    const a = await fetch("/api/audit?limit=5").then(x=>x.json());
+    el.innerHTML = `<p class="hint">Broker-side audit: plan, catalogue version and each source's decision. No clinical values are held.</p><pre>${esc(JSON.stringify(a,null,2))}</pre>`;
+  } else if(tab==="cdif"){
+    const c = await fetch("/api/catalogue/cdif").then(x=>x.json());
+    el.innerHTML = `<p class="hint">Portable, CDIF-style JSON-LD description of sources and variables (P9: control plane exportable without loss).</p><pre>${esc(JSON.stringify(c,null,2))}</pre>`;
+  }
+}
+
+function chart(items, title, byRep=false){
+  const pts = items.filter(i=>typeof (i.rendered_value??i.native_value)==="number");
+  if(!pts.length) return `<h2 style="margin-top:14px">${esc(title)}</h2><div class="empty">No values.</div>`;
+  const W=760,H=240,P={l:44,r:12,t:10,b:28};
+  const xs = pts.map(i=>Date.parse(i.effective_time)), ys = pts.map(i=>i.rendered_value??i.native_value);
+  const x0=Math.min(...xs), x1=Math.max(...xs)||x0+1, y0=Math.min(...ys)*0.9, y1=Math.max(...ys)*1.05;
+  const X=t=>P.l+(t-x0)/((x1-x0)||1)*(W-P.l-P.r), Y=v=>H-P.b-(v-y0)/((y1-y0)||1)*(H-P.t-P.b);
+  const key = i => byRep ? i.source+" · "+i.represented_label.replace(/^eGFR, /,"") : i.source;
+  const series = {}; pts.forEach(i=>(series[key(i)] ||= []).push(i));
+  const colors = ["var(--s1)","var(--s2)","var(--s3)","var(--s4)"];
+  const ticks = [0,.25,.5,.75,1].map(f=>y0+(y1-y0)*f);
+  let svg = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title)}">`;
+  svg += ticks.map(v=>`<line x1="${P.l}" x2="${W-P.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${P.l-6}" y="${Y(v)+4}" font-size="11" text-anchor="end" fill="var(--muted)">${Math.round(v)}</text>`).join("");
+  [x0,(x0+x1)/2,x1].forEach((t,n)=>svg+=`<text x="${X(t)}" y="${H-8}" font-size="11" text-anchor="${["start","middle","end"][n]}" fill="var(--muted)">${new Date(t).toISOString().slice(0,7)}</text>`);
+  Object.entries(series).forEach(([k,list],n)=>{
+    const c = colors[n%colors.length]; list.sort((a,b)=>Date.parse(a.effective_time)-Date.parse(b.effective_time));
+    svg += `<polyline fill="none" stroke="${c}" stroke-width="2" points="${list.map(i=>X(Date.parse(i.effective_time))+","+Y(i.rendered_value??i.native_value)).join(" ")}"/>`;
+    svg += list.map(i=>`<circle cx="${X(Date.parse(i.effective_time))}" cy="${Y(i.rendered_value??i.native_value)}" r="${i.flags.includes("possible-duplicate")?6:4}" fill="${i.flags.includes("possible-duplicate")?"none":c}" stroke="${c}" stroke-width="2"><title>${esc(i.source)} ${esc(i.effective_time.slice(0,10))}: ${esc(i.rendered_value??i.native_value)} ${esc(i.rendered_unit??i.native_unit)}${i.flags.length?" ["+esc(i.flags.join(", "))+"]":""}</title></circle>`).join("");
+    series[k].color = c;
+  });
+  svg += `</svg>`;
+  const unit = pts[0].rendered_unit ?? pts[0].native_unit;
+  return `<h2 style="margin-top:14px">${esc(title)} <span class="muted" style="text-transform:none">(${esc(unit)})</span></h2>${svg}
+    <div class="legend">${Object.entries(series).map(([k,l])=>`<span><i style="background:${l.color}"></i>${esc(k)}</span>`).join("")}<span>○ possible duplicate</span></div>`;
+}
+
+function showProv(it){
+  const row = (k,v)=>`<div><span class="muted">${esc(k)}</span><br>${v}</div>`;
+  $("#provBody").innerHTML = `<h3>${esc(it.concept_label)} — ${fmtVal(it)}</h3>
+    <p class="muted" style="margin-top:0">${esc(it.item_id)} · ${esc(it.represented_label)}</p>
+    <div class="grid2">
+      ${row("Where it originated", esc(it.source)+" · "+esc(it.source_record_id))}
+      ${row("Authority", esc(it.authority_status))}
+      ${row("Original or transformed", it.flags.includes("derived")?"Transformed (native "+esc(it.native_value)+" "+esc(it.native_unit)+")":"Original value")}
+      ${row("Equivalence grade", esc(it.grade))}
+      ${row("Identity link", esc(it.match_method)+" · confidence "+esc(it.match_confidence))}
+      ${row("Effective / recorded", esc(it.effective_time)+"<br>"+esc(it.recorded_time||"—"))}
+      ${row("Retrieved", esc(it.retrieved_at))}
+      ${row("Catalogue version", esc(last.catalogue_version))}
+    </div>
+    <h2 style="margin-top:16px">Mappings and transformations applied</h2>
+    <ul class="chain">${it.transformation_chain.map(s=>`<li><strong>${esc(s.kind)}</strong> ${esc(s.id)} v${esc(s.version)}<br><span class="muted">${esc(s.detail)}</span></li>`).join("")}</ul>
+    ${it.notes.length?`<h2>Notes</h2><ul>${it.notes.map(n=>`<li>${esc(n)}</li>`).join("")}</ul>`:""}
+    ${it.quality.length?`<h2>Quality descriptors</h2><ul>${it.quality.map(n=>`<li>${esc(n)}</li>`).join("")}</ul>`:""}
+    <h2>Native representation</h2><pre>${esc(JSON.stringify(it.native_representation,null,2))}</pre>`;
+  $("#prov").showModal();
+}
+
+$("#run").onclick = run;
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+{
+  "catalogue_version": "2026-09-28.1",
+  "description": "Demonstrator metadata catalogue. All sources, people and values are synthetic. Terminology codes are illustrative and must be verified before any real use.",
+  "purposes": ["direct-care", "secondary-use", "research"],
+  "identity_thresholds": {
+    "direct-care": 0.90,
+    "secondary-use": 0.95,
+    "research": 0.99
+  },
+  "concepts": [
+    {
+      "id": "concept:egfr",
+      "label": "Estimated glomerular filtration rate",
+      "bindings": [{"system": "http://snomed.info/sct", "code": "80274001", "display": "Glomerular filtration rate"}]
+    },
+    {
+      "id": "concept:serum-creatinine",
+      "label": "Serum creatinine",
+      "bindings": [{"system": "http://snomed.info/sct", "code": "113075003", "display": "Creatinine measurement, serum"}]
+    },
+    {
+      "id": "concept:uacr",
+      "label": "Urine albumin:creatinine ratio",
+      "bindings": [{"system": "http://snomed.info/sct", "code": "271075006", "display": "Urine albumin/creatinine ratio"}]
+    },
+    {
+      "id": "concept:renal-imaging-report",
+      "label": "Renal ultrasound report",
+      "bindings": [{"system": "http://snomed.info/sct", "code": "169197007", "display": "Ultrasound of kidney"}]
+    }
+  ],
+  "represented_variables": [
+    {
+      "id": "rv:egfr-ckdepi-2009",
+      "concept": "concept:egfr",
+      "label": "eGFR, CKD-EPI 2009 equation",
+      "value_domain": "quantity",
+      "unit": "mL/min/{1.73_m2}",
+      "bindings": [{"system": "http://loinc.org", "code": "62238-1"}],
+      "context": {"method": "CKD-EPI 2009"}
+    },
+    {
+      "id": "rv:egfr-ckdepi-2021",
+      "concept": "concept:egfr",
+      "label": "eGFR, CKD-EPI 2021 equation",
+      "value_domain": "quantity",
+      "unit": "mL/min/{1.73_m2}",
+      "bindings": [{"system": "http://loinc.org", "code": "98979-8"}],
+      "context": {"method": "CKD-EPI 2021"}
+    },
+    {
+      "id": "rv:creatinine-umol",
+      "concept": "concept:serum-creatinine",
+      "label": "Serum creatinine, molar concentration",
+      "value_domain": "quantity",
+      "unit": "umol/L",
+      "bindings": [{"system": "http://loinc.org", "code": "14682-9"}]
+    },
+    {
+      "id": "rv:creatinine-mgdl",
+      "concept": "concept:serum-creatinine",
+      "label": "Serum creatinine, mass concentration",
+      "value_domain": "quantity",
+      "unit": "mg/dL",
+      "bindings": [{"system": "http://loinc.org", "code": "2160-0"}]
+    },
+    {
+      "id": "rv:uacr-mgmmol",
+      "concept": "concept:uacr",
+      "label": "Urine albumin:creatinine ratio",
+      "value_domain": "quantity",
+      "unit": "mg/mmol",
+      "bindings": [{"system": "http://loinc.org", "code": "32294-1"}]
+    },
+    {
+      "id": "rv:renal-us-report",
+      "concept": "concept:renal-imaging-report",
+      "label": "Renal ultrasound report text",
+      "value_domain": "text",
+      "unit": null,
+      "bindings": []
+    }
+  ],
+  "sources": [
+    {
+      "id": "hospital-a",
+      "label": "Hospital A (openEHR CDR)",
+      "owner": "Hospital A",
+      "jurisdiction": "demo",
+      "authority_status": "authoritative for results it records",
+      "lifecycle": "live",
+      "capability": {
+        "interface": "openehr-aql",
+        "operations": ["filter-subject", "filter-concept", "filter-date"],
+        "purposes_accepted": ["direct-care", "secondary-use"],
+        "expected_latency_ms": 300,
+        "conformance": {"templates": ["openEHR-EHR-OBSERVATION.laboratory_test_result.v1"], "last_tested": "2026-09-01", "result": "pass"}
+      },
+      "quality": ["Laboratory results validated by source laboratory"]
+    },
+    {
+      "id": "hospital-b",
+      "label": "Hospital B (FHIR R4 EPR)",
+      "owner": "Hospital B",
+      "jurisdiction": "demo",
+      "authority_status": "authoritative for results it records",
+      "lifecycle": "live",
+      "capability": {
+        "interface": "fhir-r4-search",
+        "operations": ["filter-subject", "filter-concept", "filter-date", "paging"],
+        "purposes_accepted": ["direct-care", "secondary-use"],
+        "expected_latency_ms": 400,
+        "conformance": {"profiles": ["Observation (LOINC-coded laboratory)"], "last_tested": "2026-08-20", "result": "pass"}
+      },
+      "quality": ["Reports eGFR under both CKD-EPI 2009 and 2021 equations during transition"]
+    },
+    {
+      "id": "community",
+      "label": "Community provider (governed SQL service)",
+      "owner": "Community Health Provider",
+      "jurisdiction": "demo",
+      "authority_status": "not authoritative for laboratory results (copies received from lab)",
+      "lifecycle": "live",
+      "capability": {
+        "interface": "sql-service",
+        "operations": ["filter-subject", "filter-concept", "filter-date"],
+        "purposes_accepted": ["direct-care"],
+        "expected_latency_ms": 600,
+        "conformance": {"services": ["LAB_RESULTS parameterised view"], "last_tested": "2026-07-15", "result": "pass"}
+      },
+      "quality": ["Creatinine stored in mg/dL", "Patient-requested restrictions enforced at source"]
+    },
+    {
+      "id": "imaging",
+      "label": "Imaging provider (DICOMweb + reports)",
+      "owner": "Regional Imaging Network",
+      "jurisdiction": "demo",
+      "authority_status": "authoritative for imaging reports",
+      "lifecycle": "live",
+      "capability": {
+        "interface": "dicomweb-reports",
+        "operations": ["filter-subject", "filter-date"],
+        "purposes_accepted": ["direct-care"],
+        "expected_latency_ms": 2500,
+        "conformance": {"services": ["QIDO-RS", "report retrieval"], "last_tested": "2026-06-30", "result": "pass"}
+      },
+      "quality": ["Report text only; no structured findings"]
+    },
+    {
+      "id": "research",
+      "label": "Research repository (curated renal cohort)",
+      "owner": "Renal Research Unit",
+      "jurisdiction": "demo",
+      "authority_status": "derived dataset; not authoritative",
+      "lifecycle": "live",
+      "capability": {
+        "interface": "dataset-api",
+        "operations": ["filter-subject", "filter-concept"],
+        "purposes_accepted": ["research"],
+        "expected_latency_ms": 800,
+        "conformance": {"datasets": ["RENAL-COHORT-2025 (DDI-CDI described)"], "last_tested": "2026-05-10", "result": "pass"}
+      },
+      "quality": ["Quarterly refresh; values curated"]
+    }
+  ],
+  "instance_variables": [
+    {"id": "iv:a-creatinine", "source": "hospital-a", "represented_variable": "rv:creatinine-umol",
+     "native": {"archetype": "openEHR-EHR-OBSERVATION.laboratory_test_result.v1", "analyte_code": "14682-9", "path": "/content[openEHR-EHR-OBSERVATION.laboratory_test_result.v1]/data[at0001]/events[at0002]/data[at0003]/items[openEHR-EHR-CLUSTER.laboratory_test_analyte.v1]/items[at0001]/value"}},
+    {"id": "iv:a-egfr", "source": "hospital-a", "represented_variable": "rv:egfr-ckdepi-2021",
+     "native": {"archetype": "openEHR-EHR-OBSERVATION.laboratory_test_result.v1", "analyte_code": "98979-8", "path": "/content[openEHR-EHR-OBSERVATION.laboratory_test_result.v1]/.../items[at0001]/value"}},
+    {"id": "iv:a-uacr", "source": "hospital-a", "represented_variable": "rv:uacr-mgmmol",
+     "native": {"archetype": "openEHR-EHR-OBSERVATION.laboratory_test_result.v1", "analyte_code": "32294-1", "path": "/content[openEHR-EHR-OBSERVATION.laboratory_test_result.v1]/.../items[at0001]/value"}},
+
+    {"id": "iv:b-creatinine", "source": "hospital-b", "represented_variable": "rv:creatinine-umol",
+     "native": {"resource": "Observation", "code": "http://loinc.org|14682-9"}},
+    {"id": "iv:b-egfr-2009", "source": "hospital-b", "represented_variable": "rv:egfr-ckdepi-2009",
+     "native": {"resource": "Observation", "code": "http://loinc.org|62238-1"}},
+    {"id": "iv:b-egfr-2021", "source": "hospital-b", "represented_variable": "rv:egfr-ckdepi-2021",
+     "native": {"resource": "Observation", "code": "http://loinc.org|98979-8"}},
+
+    {"id": "iv:c-creatinine", "source": "community", "represented_variable": "rv:creatinine-mgdl",
+     "native": {"table": "LAB_RESULTS", "column": "CREAT_MGDL", "test_code": "CREAT"}},
+    {"id": "iv:c-uacr", "source": "community", "represented_variable": "rv:uacr-mgmmol",
+     "native": {"table": "LAB_RESULTS", "column": "ACR_VAL", "test_code": "ACR"}},
+
+    {"id": "iv:img-renal-us", "source": "imaging", "represented_variable": "rv:renal-us-report",
+     "native": {"modality": "US", "body_part": "KIDNEY", "report": "text"}},
+
+    {"id": "iv:r-egfr", "source": "research", "represented_variable": "rv:egfr-ckdepi-2021",
+     "native": {"dataset": "RENAL-COHORT-2025", "variable": "EGFR_21"}}
+  ],
+  "mappings": [
+    {"id": "map:a-creatinine", "version": "1.0", "from": "iv:a-creatinine", "to_concept": "concept:serum-creatinine", "grade": "exact",
+     "lifecycle": "approved", "author": "Terminology and Mapping Authority", "reviewed": "2026-09-01"},
+    {"id": "map:a-egfr", "version": "1.0", "from": "iv:a-egfr", "to_concept": "concept:egfr", "grade": "narrower",
+     "lifecycle": "approved", "author": "Terminology and Mapping Authority", "reviewed": "2026-09-01",
+     "note": "Specific equation (CKD-EPI 2021) of the general eGFR concept"},
+    {"id": "map:a-uacr", "version": "1.0", "from": "iv:a-uacr", "to_concept": "concept:uacr", "grade": "exact",
+     "lifecycle": "approved", "author": "Terminology and Mapping Authority", "reviewed": "2026-09-01"},
+
+    {"id": "map:b-creatinine", "version": "1.0", "from": "iv:b-creatinine", "to_concept": "concept:serum-creatinine", "grade": "exact",
+     "lifecycle": "approved", "author": "Terminology and Mapping Authority", "reviewed": "2026-08-20"},
+    {"id": "map:b-egfr-2009", "version": "1.1", "from": "iv:b-egfr-2009", "to_concept": "concept:egfr", "grade": "narrower",
+     "lifecycle": "approved", "author": "Terminology and Mapping Authority", "reviewed": "2026-08-20",
+     "note": "CKD-EPI 2009 equation; related (not exact) to CKD-EPI 2021 values"},
+    {"id": "map:b-egfr-2021", "version": "1.1", "from": "iv:b-egfr-2021", "to_concept": "concept:egfr", "grade": "narrower",
+     "lifecycle": "approved", "author": "Terminology and Mapping Authority", "reviewed": "2026-08-20",
+     "note": "CKD-EPI 2021 equation"},
+
+    {"id": "map:c-creatinine", "version": "2.0", "from": "iv:c-creatinine", "to_concept": "concept:serum-creatinine", "grade": "exact",
+     "conditions": "Only where SPECIMEN is null or 'SERUM'",
+     "condition_rule": {"field": "specimen", "in": [null, "SERUM"]},
+     "transformation": "ucum:creatinine:mg/dL->umol/L",
+     "lifecycle": "approved", "author": "Terminology and Mapping Authority", "reviewed": "2026-07-15"},
+    {"id": "map:c-uacr", "version": "0.1", "from": "iv:c-uacr", "to_concept": "concept:uacr", "grade": "exact",
+     "lifecycle": "proposed", "author": "Community provider informatics", "reviewed": null,
+     "note": "Awaiting clinical sign-off: source unit not yet confirmed"},
+
+    {"id": "map:img-renal-us", "version": "1.0", "from": "iv:img-renal-us", "to_concept": "concept:renal-imaging-report", "grade": "exact",
+     "lifecycle": "approved", "author": "Terminology and Mapping Authority", "reviewed": "2026-06-30"},
+
+    {"id": "map:r-egfr", "version": "1.0", "from": "iv:r-egfr", "to_concept": "concept:egfr", "grade": "narrower",
+     "lifecycle": "approved", "author": "Renal Research Unit", "reviewed": "2026-05-10"}
+  ],
+  "representation_relations": [
+    {"id": "rel:egfr-equations", "a": "rv:egfr-ckdepi-2009", "b": "rv:egfr-ckdepi-2021", "grade": "related",
+     "note": "Different estimating equations; values are not interchangeable"}
+  ],
+  "transformations": [
+    {"id": "ucum:creatinine:mg/dL->umol/L", "version": "1.0", "description": "Creatinine mass to molar concentration (x 88.42)",
+     "from_unit": "mg/dL", "to_unit": "umol/L", "factor": 88.42, "ddi_cdi_process": "InformationFlowDefinition step: unit conversion"}
+  ]
+}
